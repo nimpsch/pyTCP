@@ -7,13 +7,11 @@ import async_timeout
 from .client_errors import ClientTimeoutError
 
 
-class TcpClient:
+class AsyncTcpClient:
     """Asynchronous tcp client
 
     Attributes
     ----------
-    loop : :obj:
-        The asyncio event loop.
     host : str
         The ip address of the tcp server.
     port : int
@@ -30,7 +28,7 @@ class TcpClient:
         The split part of the msg which was not returned.
     """
 
-    def __init__(self, loop, host: str = "127.0.0.1", port: int = 8080, auto_reconnect: bool = True):
+    def __init__(self, host: str = "127.0.0.1", port: int = 8080, auto_reconnect: bool = True):
         """The constructor.
 
         Parameters
@@ -44,7 +42,6 @@ class TcpClient:
         auto_reconnect : bool, default=True
             If true, a reconnect will be made on connection loss.
         """
-        self.loop = loop
         self.host = host
         self.port = port
 

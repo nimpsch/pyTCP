@@ -2,7 +2,7 @@ import asyncio
 from unittest import mock
 
 import pytest
-from pyTCP.async_client import TcpClient
+from pyTCP.async_client import AsyncTcpClient
 from pyTCP.client_errors import ClientTimeoutError
 from pyTCP.server import EchoServer
 
@@ -34,7 +34,7 @@ class TestAsyncTcpClient:
     async def setup(self):
         echo_server = EchoServer("127.0.0.1", 12345)
         echo_server.start_server()
-        client = TcpClient("127.0.0.1", port=12345)
+        client = AsyncTcpClient(host="127.0.0.1", port=12345)
         await client.connect()
 
         yield client, echo_server
@@ -156,21 +156,21 @@ class TestAsyncTcpClient:
         with mock.patch('asyncio.open_connection') as asyncio_mock:
             asyncio_mock.return_value = 1, 2
             asyncio_mock.side_effect = ConnectionRefusedError
-            client = TcpClient("127.0.0.1", port=12345)
+            client = AsyncTcpClient("127.0.0.1", port=12345)
             with pytest.raises(ClientTimeoutError):
                 await client.connect(timeout=0.6)
                 assert asyncio.open_connection.call_count == 2
 
     @pytest.mark.asyncio
     async def test_send_returns_if_not_connected(self):
-        client = TcpClient("127.0.0.1", port=12345)
+        client = AsyncTcpClient("127.0.0.1", port=12345)
         client.writer = mock.MagicMock(side_effect=ConnectionRefusedError)
         await client.send(b"Test")
         assert client.writer.write.call_count == 0
 
     @pytest.mark.asyncio
     async def test_recv_returns_if_not_connected(self):
-        client = TcpClient("127.0.0.1", port=12345)
+        client = AsyncTcpClient("127.0.0.1", port=12345)
         client.reader = mock.MagicMock(side_effect=ConnectionRefusedError)
         ret = await client.receive()
         assert 0 == client.reader.read.call_count
