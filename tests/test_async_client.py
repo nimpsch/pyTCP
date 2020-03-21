@@ -2,10 +2,9 @@ import asyncio
 from unittest import mock
 
 import pytest
-from mock_server import MockServer
-
 from pyTCP.async_client import TcpClient
 from pyTCP.client_errors import ClientTimeoutError
+from pyTCP.server import EchoServer
 
 
 async def async_magic():
@@ -33,27 +32,27 @@ class TestAsyncTcpClient:
     @pytest.mark.timeout(1)
     @pytest.fixture
     async def setup(self):
-        mock_server = MockServer("127.0.0.1", 12345)
-        mock_server.start_server()
+        echo_server = EchoServer("127.0.0.1", 12345)
+        echo_server.start_server()
         client = TcpClient("127.0.0.1", port=12345)
         await client.connect()
 
-        yield client, mock_server
+        yield client, echo_server
         # teardown
         client.close()
-        mock_server.stop_server()
+        echo_server.stop_server()
 
     @pytest.mark.asyncio
     async def test_send_with_server(self, setup):
-        client, mock_server = setup
+        client, echo_server = setup
         data_to_send = b"Test message"
         await client.send(data_to_send)
-        ret = mock_server.get_message()
+        ret = echo_server.last_received
         assert ret == data_to_send
 
     @pytest.mark.asyncio
     async def test_receive_with_server(self, setup):
-        client, mock_server = setup
+        client, echo_server = setup
         data_to_send = b"Test message"
         await client.send(data_to_send)
         data = await client.receive()
@@ -61,7 +60,7 @@ class TestAsyncTcpClient:
 
     @pytest.mark.asyncio
     async def test_connect_and_receive_until(self, setup):
-        client, mock_server = setup
+        client, echo_server = setup
         data_to_send = b"Test message\nHello"
         await client.send(data_to_send)
         ret = await client.receive_until(delimiter=b'\n')
@@ -70,7 +69,7 @@ class TestAsyncTcpClient:
 
     @pytest.mark.asyncio
     async def test_connect_and_receive_parts(self, setup):
-        client, mock_server = setup
+        client, echo_server = setup
         data_to_send = b"Test message\nHello"
         await client.send(data_to_send)
         ret = await client.receive_until(bytes_to_receive=1, delimiter=b'\n')
@@ -79,7 +78,7 @@ class TestAsyncTcpClient:
 
     @pytest.mark.asyncio
     async def test_reconnect_on_send_with_socket_error(self, setup):
-        client, mock_server = setup
+        client, echo_server = setup
         client.writer.write = mock.MagicMock(side_effect=ConnectionRefusedError)
         client.connect = mock.MagicMock()
         await client.send(b"Test message")
@@ -88,7 +87,7 @@ class TestAsyncTcpClient:
 
     @pytest.mark.asyncio
     async def test_no_reconnect_on_send_with_socket_error(self, setup):
-        client, mock_server = setup
+        client, echo_server = setup
         client.writer.write = mock.MagicMock(side_effect=ConnectionRefusedError)
         client.connect = mock.MagicMock()
         client.auto_reconnect = False
@@ -99,7 +98,7 @@ class TestAsyncTcpClient:
 
     @pytest.mark.asyncio
     async def test_reconnect_on_receive_with_socket_error(self, setup):
-        client, mock_server = setup
+        client, echo_server = setup
         client.reader.read = mock.MagicMock(side_effect=ConnectionRefusedError)
         client.connect = mock.MagicMock()
 
@@ -109,7 +108,7 @@ class TestAsyncTcpClient:
 
     @pytest.mark.asyncio
     async def test_no_reconnect_on_receive_with_socket_error(self, setup):
-        client, mock_server = setup
+        client, echo_server = setup
         client.reader.read = mock.MagicMock(side_effect=ConnectionRefusedError)
         client.auto_reconnect = False
         client.connect = mock.MagicMock()
@@ -121,13 +120,13 @@ class TestAsyncTcpClient:
 
     @pytest.mark.asyncio
     async def test_receive_until_raises(self, setup):
-        client, mock_server = setup
+        client, echo_server = setup
         with pytest.raises(ClientTimeoutError):
             await client.receive_until(delimiter=b'\n', timeout=0)
 
     @pytest.mark.asyncio
     async def test_receive_until_empty(self, setup):
-        client, mock_server = setup
+        client, echo_server = setup
         client.reader.read = mock.MagicMock(side_effect=ConnectionRefusedError)
         data_to_send = b""
         client.reader.read.return_value.recv.return_value = data_to_send
@@ -136,14 +135,14 @@ class TestAsyncTcpClient:
 
     @pytest.mark.asyncio
     async def test_connect(self, setup):
-        client, mock_server = setup
+        client, echo_server = setup
         assert client.is_connected
         client.close()
         assert not client.is_connected
 
     @pytest.mark.asyncio
     async def test_close(self, setup):
-        client, mock_server = setup
+        client, echo_server = setup
         client.writer = mock.MagicMock()
         client.close()
         assert not client.is_connected

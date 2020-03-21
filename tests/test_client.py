@@ -3,10 +3,9 @@ import unittest
 from unittest import mock
 
 import pytest
-from mock_server import MockServer
-
 from pyTCP.client import TcpClient
 from pyTCP.client_errors import ClientTimeoutError
+from pyTCP.server import EchoServer
 
 
 class TcpClientTest(unittest.TestCase):
@@ -20,25 +19,45 @@ class TcpClientTest(unittest.TestCase):
     def tearDown(self):
         self.client.close()
 
-    @pytest.mark.timeout(1)
+    @pytest.mark.timeout(2)
     def test_send_with_server(self):
-        mock_server = MockServer("127.0.0.1", 12345)
-        mock_server.start_server()
+        echo_server = EchoServer("127.0.0.1", 12345)
+        echo_server.start_server()
         client = TcpClient("127.0.0.1", port=12345)
         client.connect()
 
         data_to_send = b"Test message"
         client.send(data_to_send)
-        ret = mock_server.get_message()
+        ret = echo_server.last_received
         self.assertEqual(data_to_send, ret)
 
-        mock_server.stop_server()
+        echo_server.stop_server()
         client.close()
 
-    @pytest.mark.timeout(1)
+    @pytest.mark.timeout(2)
+    def test_send_two_msgs_with_server(self):
+        echo_server = EchoServer("127.0.0.1", 12345)
+        echo_server.start_server()
+        client = TcpClient("127.0.0.1", port=12345)
+        client.connect()
+
+        data_to_send = b"Test message"
+        client.send(data_to_send)
+        ret = echo_server.last_received
+        self.assertEqual(data_to_send, ret)
+
+        data_to_send_two = b"Test message Two"
+        client.send(data_to_send_two)
+        ret = echo_server.last_received
+        self.assertEqual(data_to_send_two, ret)
+
+        echo_server.stop_server()
+        client.close()
+
+    @pytest.mark.timeout(2)
     def test_receive_parts(self):
-        mock_server = MockServer("127.0.0.1", 12345)
-        mock_server.start_server()
+        echo_server = EchoServer("127.0.0.1", 12345)
+        echo_server.start_server()
         client = TcpClient("127.0.0.1", port=12345)
         client.connect()
 
@@ -48,7 +67,7 @@ class TcpClientTest(unittest.TestCase):
         self.assertEqual(b"Test message", ret)
         self.assertEqual(b"", client.buffer[0])
 
-        mock_server.stop_server()
+        echo_server.stop_server()
         client.close()
 
     def test_connect_and_receive(self):
