@@ -1,5 +1,4 @@
-from pyTCP.client import TcpClient
-from pyTCP.server import EchoServer
+from pyTCP import EchoServer, TcpClient
 
 echo_server = EchoServer("127.0.0.1", 12345)
 echo_server.start_server()

@@ -13,13 +13,7 @@ pyTCP
 ========
 
 
-Add a short description here!
-
-
-Description
-===========
-
-A longer description of your project goes here...
+A small tcp package to send and receive tcp messages.
 
 Installation
 ============
@@ -33,8 +27,7 @@ synchronous:
 
 .. code-block:: python
 
-    from pyTCP.client import TcpClient
-    from pyTCP.server import EchoServer
+    from pyTCP import EchoServer, TcpClient
 
     echo_server = EchoServer("127.0.0.1", 12345)
     echo_server.start_server()
@@ -63,8 +56,7 @@ async:
 
     import asyncio
 
-    from pyTCP.async_client import AsyncTcpClient
-    from pyTCP.server import EchoServer
+    from pyTCP import AsyncTcpClient, EchoServer
 
 
     async def main():

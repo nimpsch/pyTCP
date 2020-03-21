@@ -1,7 +1,6 @@
 import asyncio
 
-from pyTCP.async_client import AsyncTcpClient
-from pyTCP.server import EchoServer
+from pyTCP import AsyncTcpClient, EchoServer
 
 
 async def main():

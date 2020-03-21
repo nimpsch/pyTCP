@@ -1,7 +1,8 @@
 import socket
+import time
 import unittest
 from unittest import mock
-import time
+
 import pytest
 from pyTCP.client import TcpClient
 from pyTCP.client_errors import ClientTimeoutError
