@@ -16,7 +16,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
             for sock in ready_read:
                 if sock == self.request:
-                    recv_msg = sock.recv(4048)
+                    recv_msg = sock.recv(self.server.instance.receive_bytes)
                     if recv_msg is not None:
                         self.request.sendall(recv_msg)
                         self.server.instance.add(recv_msg)
@@ -25,14 +25,14 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 class EchoServer:
     socketserver.TCPServer.allow_reuse_address = True
 
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, receive_bytes=4096):
         self.server = ThreadedTCPServer((ip, port), ThreadedTCPRequestHandler)
         self.server_thread = threading.Thread(target=self.server.serve_forever)
         self.server_thread.daemon = True
         self.server.socket.setblocking(False)
         self.server.instance = self
         self.keep_alive = False
-
+        self.receive_bytes = receive_bytes
         self._last_received = Queue(maxsize=1)
 
     @property
@@ -50,4 +50,7 @@ class EchoServer:
 
     def add(self, message):
         if not self._last_received.full():
+            self._last_received.put(message)
+        else:
+            self._last_received.get_nowait()
             self._last_received.put(message)

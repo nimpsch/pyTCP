@@ -1,7 +1,7 @@
 import socket
 import unittest
 from unittest import mock
-
+import time
 import pytest
 from pyTCP.client import TcpClient
 from pyTCP.client_errors import ClientTimeoutError
@@ -36,20 +36,16 @@ class TcpClientTest(unittest.TestCase):
 
     @pytest.mark.timeout(2)
     def test_send_two_msgs_with_server(self):
-        echo_server = EchoServer("127.0.0.1", 12345)
+        echo_server = EchoServer("127.0.0.1", 12345, receive_bytes=1)
         echo_server.start_server()
         client = TcpClient("127.0.0.1", port=12345)
         client.connect()
 
-        data_to_send = b"Test message"
+        data_to_send = b"12"
         client.send(data_to_send)
+        time.sleep(0.1)
         ret = echo_server.last_received
-        self.assertEqual(data_to_send, ret)
-
-        data_to_send_two = b"Test message Two"
-        client.send(data_to_send_two)
-        ret = echo_server.last_received
-        self.assertEqual(data_to_send_two, ret)
+        self.assertEqual(b"2", ret)
 
         echo_server.stop_server()
         client.close()
