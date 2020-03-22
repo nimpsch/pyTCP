@@ -1,9 +1,17 @@
-.. image:: https://travis-ci.org/nimpsch/pyTCP.svg?branch=master
-    :alt: Travis
-    :target: https://travis-ci.org/nimpsch/pyTCP
+.. image:: https://img.shields.io/pypi/v/pyTCP.svg
+    :target: https://pypi.org/project/pyTCP
+
+.. image:: https://img.shields.io/pypi/pyversions/pyTCP.svg
+    :target: https://pypi.org/project/pyTCP
+
 .. image:: https://readthedocs.org/projects/pytcp/badge/?version=latest
     :alt: ReadTheDocs
     :target: https://pytcp.readthedocs.io/
+
+.. image:: https://travis-ci.org/nimpsch/pyTCP.svg?branch=master
+    :alt: Travis
+    :target: https://travis-ci.org/nimpsch/pyTCP
+
 .. image:: https://img.shields.io/coveralls/github/nimpsch/pyTCP/master.svg
     :alt: Coveralls
     :target: https://coveralls.io/r/nimpsch/pyTCP
