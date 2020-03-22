@@ -18,7 +18,9 @@ A small tcp package to send and receive tcp messages.
 Installation
 ============
 
-TBD
+.. code-block:: bash
+
+    pip install pyTCP
 
 Usage
 =====
